@@ -46,6 +46,32 @@ Execute these steps in order. Steps 3 and 4 can run in parallel.
    - `.gitignore` — Python + Jupyter + venv + `external/*/` ignored
    - `requirements.txt` — base + topic-specific deps; comments explaining any pins
    - `README.md` — using the structure from `templates/project_readme.md`
+   - `start.sh` — **mandatory, executable** one-shot launcher. Idempotent: creates `.venv` on first run, reuses it after; installs requirements; launches `jupyter lab`. After writing, run `chmod +x start.sh`. The README's Quickstart must show `./start.sh` as option 1 (the manual `python -m venv ...` sequence is option 2).
+
+   Template `start.sh`:
+
+   ```bash
+   #!/usr/bin/env bash
+   # start.sh — one-shot launcher for this lineage project.
+   # Idempotent: creates the venv on first run, reuses it after.
+   set -euo pipefail
+   cd "$(dirname "$0")"
+
+   VENV=".venv"
+   if [ ! -d "$VENV" ]; then
+       echo "[start] creating venv at $VENV"
+       python3 -m venv "$VENV"
+   fi
+   # shellcheck disable=SC1091
+   source "$VENV/bin/activate"
+
+   echo "[start] syncing requirements"
+   pip install --quiet --upgrade pip
+   pip install --quiet -r requirements.txt
+
+   echo "[start] launching JupyterLab — open notebooks/01_*.ipynb first"
+   exec jupyter lab
+   ```
 
 3. **Pre-flight: validate repo URLs** before mass cloning. For each candidate repo, run `git ls-remote <url> HEAD` (fast, no clone). For any URL that fails (404, renamed, archived), propose a substitute *before* committing to the build — e.g., `Stability-AI/stablediffusion` → `Stability-AI/generative-models`, `CompVis/latent-diffusion` → `CompVis/stable-diffusion`. Update Phase 1's table with the substitutes, surface them to the user, then proceed.
 
