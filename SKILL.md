@@ -47,7 +47,9 @@ Execute these steps in order. Steps 3 and 4 can run in parallel.
    - `requirements.txt` — base + topic-specific deps; comments explaining any pins
    - `README.md` — using the structure from `templates/project_readme.md`
 
-3. **Clone external repos in the background** (use `git clone --depth 1`, write output to a log file you can check after the rest of the build):
+3. **Pre-flight: validate repo URLs** before mass cloning. For each candidate repo, run `git ls-remote <url> HEAD` (fast, no clone). For any URL that fails (404, renamed, archived), propose a substitute *before* committing to the build — e.g., `Stability-AI/stablediffusion` → `Stability-AI/generative-models`, `CompVis/latent-diffusion` → `CompVis/stable-diffusion`. Update Phase 1's table with the substitutes, surface them to the user, then proceed.
+
+   **Clone external repos in the background** (use `git clone --depth 1`, write output to a log file you can check after the rest of the build):
 
    ```bash
    cd external && for url in "${URLS[@]}"; do
@@ -55,6 +57,8 @@ Execute these steps in order. Steps 3 and 4 can run in parallel.
        git clone --quiet --depth 1 "$url" "$name"
    done
    ```
+
+   **Tolerate single-clone failures.** If any clone fails after the pre-flight (transient network, rate limit, sudden archive), log the failure to a build log, propose a substitute, and continue with the remaining clones. Do not abort the build.
 
 4. **Write `scripts/build_notebooks.py`** — one `nb_NN()` function per notebook, each constructs the notebook via `nbformat`. The script is the **single source of truth**. See `templates/builder_skeleton.py` for the structure.
 
@@ -97,7 +101,7 @@ These have been load-bearing in practice; don't compromise on them without expli
 
 Each notebook has 5–10 cells in this order:
 
-1. **Title + Read block** (markdown): topic, "why this stage in the lineage," 4–6 paper links with direct URLs.
+1. **Title + Read block** (markdown): topic, "why this stage in the lineage," 4–6 references with direct URLs. **Include book chapters / textbook sections for math-heavy stages**, not just arxiv papers — for foundational topics (SDEs, optimisation, information theory, etc.) a textbook chapter is often more useful than the original journal paper. If a stage needs a **GPU to run usefully**, add a one-line `**Runtime.** GPU recommended; CPU works but is slow on cells X, Y.` note in the header so the reader knows what to skip.
 2. **Imports** (code).
 3. **Setup / data** (code) — synthetic data preferred where possible; if a dataset is needed, use sklearn / torchvision / huggingface that downloads on first run.
 4. **Core idea** (code, often 2–4 cells, with brief markdown between).
