@@ -123,6 +123,13 @@ These have been load-bearing in practice; don't compromise on them without expli
   curvlinops-for-pytorch<3
   ```
 
+- **Native-compiled packages must be optional, not required.** Any package that builds C/C++ extensions on `pip install` (e.g., `signatory`, `triton`, custom CUDA wheels) frequently fails on newer Python / torch combinations. Such packages must be:
+  1. Listed in a separate `requirements-extras.txt`, not the core `requirements.txt`.
+  2. Gated behind a `try / except ImportError` in any notebook that uses them, with a NumPy / pure-Python fallback path or a clear "install this and re-run" message.
+  3. Documented in the project README under a clear "optional" heading.
+
+  The reason: a failed native build aborts the entire `pip install -r requirements.txt` and blocks the whole project setup. The user can no longer even open the unrelated 90% of notebooks. Always gate.
+
 ## Notebook anatomy
 
 Each notebook has 5–10 cells in this order:
