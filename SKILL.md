@@ -1,7 +1,7 @@
 ---
 name: path-learning
-description: Generate a multi-notebook "lineage" learning project for any topic. Builds 10–14 Jupyter notebooks tracing the conceptual path from foundations to the current frontier, plus paper-linked theory cards and cloned reference repos, all regenerable from one builder script. Invoke as `/path-learning <topic>`.
-argument-hint: <topic to learn the lineage of>
+description: Personalized-learning project generator. The user picks the topic, depth, stack, scope, and where to start / end; the skill builds a runnable Jupyter notebook walk tailored to how they want to study it — 10–14 stages with paper-linked theory and cloned reference repos, all regenerable from one builder script. Invoke as `/path-learning <topic>`.
+argument-hint: <topic to learn — the user will shape the path in Phase 1>
 ---
 
 # path-learning skill
